@@ -14,6 +14,9 @@ import { originManager } from "~core/managers/origin"
 import type { Result } from "~core/utils/result-monad"
 import { err, ok } from "~core/utils/result-monad"
 import { log } from "~core/utils/utils"
+import { transactionManager } from "~core/managers/transaction"
+import { configManager } from "~core/managers/config"
+import { modelCallers } from "~core/llm"
 
 const permissionState = new RequestState<
   CompletionRequest,
@@ -60,7 +63,18 @@ export async function requestPermission(
     request.transaction.origin.id,
     originData
   )
-  if (origin.permissions === "allow") {
+
+  const config = await configManager.getWithDefault(request.transaction.model)
+  const caller = modelCallers[config.id]
+
+  const maxCost = transactionManager.getMaxCost(
+    request.transaction,
+    caller.defaultOptions.prompt_cost, 
+    caller.defaultOptions.completion_cost,
+    caller.defaultOptions.max_tokens
+  )
+
+  if (origin.limit !== 0 && maxCost !== undefined && (origin.limit === -1 || origin.used + maxCost <= origin.limit) ) {
     log("Permission granted by user settings: ", origin)
     return ok(true)
   }

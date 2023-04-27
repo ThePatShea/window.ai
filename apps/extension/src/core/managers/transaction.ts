@@ -89,6 +89,46 @@ class TransactionManager extends BaseManager<Transaction> {
       .join("\n")
   }
 
+  countTokens(query: string): number {
+    // TODO: Replace this placeholder with a more accurate way of calculating the tokens for each model (each model calculates tokens differently)
+    const tokens = query.replace(/[.,!?;:'"]/g, ' ').split(/\s+/)
+
+    return tokens.filter(token => token.length > 0).length
+  }
+
+  getMaxCost(txn: Transaction, promptCost: number | null, completionCost: number | null, maxTokens: number | null): number | undefined {
+    if ((!promptCost && promptCost !== 0) || (!completionCost && completionCost !== 0) || (!maxTokens && maxTokens !== 0)) { 
+      return undefined 
+    }
+
+    const input = this.formatInput(txn)
+    const promptTokens = this.countTokens(input)
+
+    const maxCost = (promptTokens * promptCost) + (maxTokens * completionCost)
+
+    return maxCost
+  }
+
+  getTotalCost(txn: Transaction, promptCost: number | null, completionCost: number | null): number | undefined {
+    if ((!promptCost && promptCost !== 0) || (!completionCost && completionCost !== 0)) { 
+      return undefined 
+    }
+
+    const input = this.formatInput(txn)
+    const output = this.formatOutput(txn)
+
+    if (!output) {
+      return undefined
+    }
+
+    const promptTokens = this.countTokens(input)
+    const completionTokens = this.countTokens(output)
+
+    const totalCost = (promptTokens * promptCost) + (completionTokens * completionCost)
+
+    return totalCost
+  }
+
   formatJSON(txn: Transaction): object {
     const { input, temperature, maxTokens, stopSequences, model, numOutputs } =
       txn

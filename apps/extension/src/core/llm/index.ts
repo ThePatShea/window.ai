@@ -21,7 +21,9 @@ export const local = initLocal(
   {
     // TODO consider switching from axios to fetch, since fetchAdapter
     // doesn't work in Node.js side
-    max_tokens: 512
+    max_tokens: 512,
+    prompt_cost: 0,
+    completion_cost: 0
   }
 )
 
@@ -31,6 +33,8 @@ export const openai = initOpenAI(
   },
   {
     max_tokens: DEFAULT_MAX_TOKENS,
+    prompt_cost: 0.03 / 1000, // TODO: Make this dynamic based on which OpenAI model is being used
+    completion_cost: 0.06 / 1000, // TODO: Make this dynamic based on which OpenAI model is being used
     presence_penalty: 0 // Using negative numbers causes 500s from davinci
   }
 )
@@ -41,6 +45,8 @@ export const together = initTogether(
   },
   {
     max_tokens: DEFAULT_MAX_TOKENS,
+    prompt_cost: 0,
+    completion_cost: 0,
     temperature: 0.8
     // stop_sequences: ['\n'],
   }
@@ -52,6 +58,8 @@ export const cohere = initCohere(
   },
   {
     max_tokens: DEFAULT_MAX_TOKENS,
+    prompt_cost: 0, // TODO: Replace this with the correct price per token for cohere
+    completion_cost: 0, // TODO: Replace this with the correct price per token for cohere
     temperature: 0.9
     // stop_sequences: ['\n'],
   }
