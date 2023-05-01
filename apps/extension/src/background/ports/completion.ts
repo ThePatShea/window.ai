@@ -64,8 +64,9 @@ const handler: PlasmoMessaging.PortHandler<
     log("totalCost", totalCost)
 
     const usage = await usageManager.getOrInit(txn.origin.id)
+    const updatedUsage = { ...usage, used: usage.used + totalCost }
     log("usage", usage)
-    // await usageManager.setUsage(txn.origin.id, usage + totalCost)
+    await usageManager.save(updatedUsage)
   } else {
     const result = await modelRouter.complete(txn)
 
