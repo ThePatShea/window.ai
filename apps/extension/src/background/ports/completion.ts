@@ -63,7 +63,8 @@ const handler: PlasmoMessaging.PortHandler<
     const totalCost = transactionManager.getTotalCost(txn, caller.defaultOptions.prompt_cost, caller.defaultOptions.completion_cost)
     log("totalCost", totalCost)
 
-    // const usage = await usageManager.getUsage(txn.origin.id)
+    const usage = await usageManager.getOrInit(txn.origin.id)
+    log("usage", usage)
     // await usageManager.setUsage(txn.origin.id, usage + totalCost)
   } else {
     const result = await modelRouter.complete(txn)
