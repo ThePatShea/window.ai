@@ -10,6 +10,7 @@ import type { PortResponse } from "~core/constants"
 import { PortName } from "~core/constants"
 import { configManager } from "~core/managers/config"
 import { originManager } from "~core/managers/origin"
+import { usageManager } from "~core/managers/usage"
 import type { Transaction } from "~core/managers/transaction"
 import { transactionManager } from "~core/managers/transaction"
 import { useModel } from "~core/providers/model"
@@ -29,13 +30,19 @@ export function PermissionRequest({
       : [data.requester.transaction, undefined]
 
   const { object, setObject } = originManager.useObject(transaction.origin.id)
+  const { object: usage, setObject: setUsage } = usageManager.useObject(transaction.origin.id)
 
   const allowTransaction = async () => {
     setObject({
       ...transaction.origin,
-      limit: object?.limit ?? 0,
+      limit: object?.limit ?? 0
+    })
+
+    setUsage({
+      id: transaction.origin.id,
       used: 0
     })
+
     onResult(true)
   }
 
@@ -109,7 +116,6 @@ function TransactionPermission({ transaction, object, setObject }: { transaction
       <Slider min={0} max={maxLimit} value={object?.limit} onChange={(newLimit) => 
         setObject({
           ...transaction.origin,
-          used: object?.used ?? 0,
           limit: newLimit !== maxLimit ? newLimit : -1
         })} 
       />
