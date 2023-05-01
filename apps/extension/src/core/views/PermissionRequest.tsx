@@ -16,6 +16,8 @@ import { transactionManager } from "~core/managers/transaction"
 import { useModel } from "~core/providers/model"
 import { useNav } from "~core/providers/nav"
 import { ModelID } from "~public-interface"
+import type { Origin } from "~core/managers/origin"
+
 
 export function PermissionRequest({
   data,
@@ -29,10 +31,14 @@ export function PermissionRequest({
       ? [undefined, data.error]
       : [data.requester.transaction, undefined]
 
-  const { object: origin, setObject: setOrigin } = originManager.useObject(transaction.origin.id)
-  const { setObject: setUsage } = usageManager.useObject(transaction.origin.id)
+  const { object: origin, setObject: setOrigin } = originManager.useObject(transaction ? transaction.origin.id : "")
+  const { setObject: setUsage } = usageManager.useObject(transaction ? transaction.origin.id : "")
 
   const allowTransaction = async () => {
+    if (!transaction) {
+      return
+    }
+
     setOrigin({
       ...transaction.origin,
       limit: origin?.limit ?? 0
@@ -78,7 +84,7 @@ export function PermissionRequest({
   )
 }
 
-function TransactionPermission({ transaction, origin, setOrigin }: { transaction: Transaction, origin: object, setOrigin: (object: object) => void }) {
+function TransactionPermission({ transaction, origin, setOrigin }: { transaction: Transaction, origin: Origin | undefined, setOrigin: (origin: Origin) => void }) {
   const { setSettingsShown } = useNav()
   const { modelId, setModelId } = useModel()
   const [label, setLabel] = useState("")
@@ -113,7 +119,7 @@ function TransactionPermission({ transaction, origin, setOrigin }: { transaction
           {JSON.stringify(transactionManager.formatJSON(transaction), null, 2)}
         </code>
       </Accordion>
-      <Slider min={0} max={maxLimit} value={origin?.limit} onChange={(newLimit) => 
+      <Slider min={0} max={maxLimit} value={origin?.limit ?? 0} onChange={(newLimit) => 
         setOrigin({
           ...transaction.origin,
           limit: newLimit !== maxLimit ? newLimit : -1
