@@ -19,6 +19,11 @@ class UsageManager extends BaseManager<Usage> {
     }
   }
 
+  isUnderLimit(limit: number, maxCost: number | undefined, used: number): boolean {
+    const isUnderLimit = limit !== 0 && maxCost !== undefined && (limit === -1 || used + maxCost <= limit)
+
+    return isUnderLimit
+  }
 }
 
 export const usageManager = new UsageManager()

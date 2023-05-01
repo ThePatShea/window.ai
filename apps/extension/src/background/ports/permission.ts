@@ -77,7 +77,7 @@ export async function requestPermission(
     caller.defaultOptions.max_tokens
   )
 
-  if (origin.limit !== 0 && maxCost !== undefined && (origin.limit === -1 || usage.used + maxCost <= origin.limit) ) {
+  if (usageManager.isUnderLimit(origin.limit, maxCost, usage.used)) {
     log("Permission granted by user settings: ", origin)
     return ok(true)
   }
