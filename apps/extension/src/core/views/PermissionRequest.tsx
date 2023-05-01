@@ -29,13 +29,13 @@ export function PermissionRequest({
       ? [undefined, data.error]
       : [data.requester.transaction, undefined]
 
-  const { object, setObject } = originManager.useObject(transaction.origin.id)
+  const { object: origin, setObject: setOrigin } = originManager.useObject(transaction.origin.id)
   const { object: usage, setObject: setUsage } = usageManager.useObject(transaction.origin.id)
 
   const allowTransaction = async () => {
-    setObject({
+    setOrigin({
       ...transaction.origin,
-      limit: object?.limit ?? 0
+      limit: origin?.limit ?? 0
     })
 
     setUsage({
@@ -58,7 +58,7 @@ export function PermissionRequest({
             Permission Request
           </Text>
           {transaction ? (
-            <TransactionPermission transaction={transaction} object={object} setObject={setObject} />
+            <TransactionPermission transaction={transaction} origin={origin} setOrigin={setOrigin} />
           ) : (
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Error: {error}
@@ -78,7 +78,7 @@ export function PermissionRequest({
   )
 }
 
-function TransactionPermission({ transaction, object, setObject }: { transaction: Transaction, object: object, setObject: (object: object) => void }) {
+function TransactionPermission({ transaction, origin, setOrigin }: { transaction: Transaction, origin: object, setOrigin: (object: object) => void }) {
   const { setSettingsShown } = useNav()
   const { modelId, setModelId } = useModel()
   const [label, setLabel] = useState("")
@@ -113,8 +113,8 @@ function TransactionPermission({ transaction, object, setObject }: { transaction
           {JSON.stringify(transactionManager.formatJSON(transaction), null, 2)}
         </code>
       </Accordion>
-      <Slider min={0} max={maxLimit} value={object?.limit} onChange={(newLimit) => 
-        setObject({
+      <Slider min={0} max={maxLimit} value={origin?.limit} onChange={(newLimit) => 
+        setOrigin({
           ...transaction.origin,
           limit: newLimit !== maxLimit ? newLimit : -1
         })} 
