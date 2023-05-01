@@ -30,7 +30,7 @@ export function PermissionRequest({
       : [data.requester.transaction, undefined]
 
   const { object: origin, setObject: setOrigin } = originManager.useObject(transaction.origin.id)
-  const { object: usage, setObject: setUsage } = usageManager.useObject(transaction.origin.id)
+  const { setObject: setUsage } = usageManager.useObject(transaction.origin.id)
 
   const allowTransaction = async () => {
     setOrigin({
