@@ -96,7 +96,7 @@ class TransactionManager extends BaseManager<Transaction> {
     return tokens.filter(token => token.length > 0).length
   }
 
-  getMaxCost(txn: Transaction, promptCost: number | null, completionCost: number | null, maxTokens: number | null): number | undefined {
+  getMaxCost(txn: Transaction, promptCost: number, completionCost: number, maxTokens: number | null): number | undefined {
     if ((!promptCost && promptCost !== 0) || (!completionCost && completionCost !== 0) || (!maxTokens && maxTokens !== 0)) { 
       return undefined 
     }
@@ -109,11 +109,7 @@ class TransactionManager extends BaseManager<Transaction> {
     return maxCost
   }
 
-  getTotalCost(txn: Transaction, promptCost: number | null, completionCost: number | null): number | undefined {
-    if ((!promptCost && promptCost !== 0) || (!completionCost && completionCost !== 0)) { 
-      return undefined 
-    }
-
+  getTotalCost(txn: Transaction, promptCost: number, completionCost: number): number | undefined {
     const input = this.formatInput(txn)
     const output = this.formatOutput(txn)
 
