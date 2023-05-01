@@ -1,41 +1,24 @@
 import { BaseManager } from "./base"
 
 export interface Usage {
-  key: string,
+  id: string,
   used: number
 }
 
-export type UsageData = Pick<Origin, "key">
+export type UsageData = Pick<Usage, "id" | "used">
 
-class UsageManager extends BaseManager<Origin> {
+class UsageManager extends BaseManager<Usage> {
   constructor() {
     super("usages")
   }
 
-  init(data: UsageData): Usage {
+  init(id: string): Usage {
     return {
-      ...data,
+      id,
       used: 0
     }
   }
 
-  async getUsage(id: string): UsageData {
-    const storeData = await this.store.get(<string>(id))
-
-    const used = storeData.used
-
-    return {
-      key: id,
-      used
-    }
-  }
-
-  setUsage(key: string, used: number): UsageData {
-    return {
-      key,
-      used: 0
-    }
-  }
 }
 
 export const usageManager = new UsageManager()
