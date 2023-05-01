@@ -11,6 +11,7 @@ import type {
 import { POPUP_HEIGHT, POPUP_WIDTH, PortName } from "~core/constants"
 import { Extension } from "~core/extension"
 import { originManager } from "~core/managers/origin"
+import { usageManager } from "~core/managers/usage"
 import type { Result } from "~core/utils/result-monad"
 import { err, ok } from "~core/utils/result-monad"
 import { log } from "~core/utils/utils"
@@ -64,6 +65,8 @@ export async function requestPermission(
     originData
   )
 
+  const usage = await usageManager.getOrInit(request.transaction.origin.id)
+
   const config = await configManager.getWithDefault(request.transaction.model)
   const caller = modelCallers[config.id]
 
@@ -74,7 +77,7 @@ export async function requestPermission(
     caller.defaultOptions.max_tokens
   )
 
-  if (origin.limit !== 0 && maxCost !== undefined && (origin.limit === -1 || origin.used + maxCost <= origin.limit) ) {
+  if (origin.limit !== 0 && maxCost !== undefined && (origin.limit === -1 || usage.used + maxCost <= origin.limit) ) {
     log("Permission granted by user settings: ", origin)
     return ok(true)
   }
