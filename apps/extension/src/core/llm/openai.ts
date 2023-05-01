@@ -34,6 +34,8 @@ export function init(
           ? OpenAIModelId.GPT4
           : req.model,
       defaultBaseUrl: "https://api.openai.com/v1",
+      promptCost: 0.03 / 1000, // TODO: Make this dynamic based on which OpenAI model is being used
+      completionCost: 0.06 / 1000, // TODO: Make this dynamic based on which OpenAI model is being used
       getPath: () => "/chat/completions",
       debug: config.debug,
       endOfStreamSentinel: "[DONE]",

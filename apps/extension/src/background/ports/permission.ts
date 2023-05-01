@@ -70,10 +70,12 @@ export async function requestPermission(
   const config = await configManager.getWithDefault(request.transaction.model)
   const caller = modelCallers[config.id]
 
+  log("caller", caller)
+
   const maxCost = transactionManager.getMaxCost(
     request.transaction,
-    caller.defaultOptions.prompt_cost, 
-    caller.defaultOptions.completion_cost,
+    caller.config.promptCost, 
+    caller.config.completionCost,
     caller.defaultOptions.max_tokens
   )
 

@@ -28,6 +28,8 @@ export function init(
       modelProvider: "together",
       isStreamable: false,
       defaultBaseUrl: "https://api.together.xyz",
+      promptCost: 0,
+      completionCost: 0,
       getPath: () => "/inference",
       overrideModelParam: () => TogetherModelId.GPT_NEOXT_20B_v2,
       debug: config.debug,

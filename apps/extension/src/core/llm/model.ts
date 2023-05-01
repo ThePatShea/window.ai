@@ -12,6 +12,8 @@ export interface ModelConfig {
   defaultBaseUrl: string
   modelProvider: string
   isStreamable: boolean
+  promptCost: number
+  completionCost: number
   getPath: (request: RequestData) => string
   transformForRequest: (
     request: RequestData,
@@ -44,8 +46,6 @@ export interface RequestOptions {
   timeout?: number
   user_identifier?: string | null
   max_tokens?: number | null
-  prompt_cost?: number | null
-  completion_cost?: number | null
   stream?: boolean
   adapter?: AxiosRequestConfig["adapter"] | null
 }
