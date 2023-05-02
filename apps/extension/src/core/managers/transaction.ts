@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
+import tiktoken from "@dqbd/tiktoken"
 import {
   type CompletionOptions,
   type Input,
@@ -90,10 +91,10 @@ class TransactionManager extends BaseManager<Transaction> {
   }
 
   countTokens(query: string): number {
-    // TODO: Replace this placeholder with a more accurate way of calculating the tokens for each model (each model calculates tokens differently)
-    const tokens = query.replace(/[.,!?;:'"]/g, ' ').split(/\s+/)
+    const enc = tiktoken.get_encoding("cl100k_base")
+    const tokens = enc.encode(query)
 
-    return tokens.filter(token => token.length > 0).length
+    return tokens.length
   }
 
   getMaxCost(txn: Transaction, promptCost: number, completionCost: number, maxTokens: number | null): number | undefined {
