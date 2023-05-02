@@ -60,7 +60,7 @@ const handler: PlasmoMessaging.PortHandler<
       : undefined
     txn.error = errors.join("") || undefined
 
-    const totalCost = transactionManager.getTotalCost(txn, caller.config.promptCost, caller.config.completionCost)
+    const totalCost = transactionManager.getTotalCost(txn, caller.config.getPromptCost(), caller.config.getCompletionCost())
 
     const usage = await usageManager.getOrInit(txn.origin.id)
     const updatedUsage = { ...usage, used: usage.used + (totalCost ?? 0) }
