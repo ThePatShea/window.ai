@@ -9,6 +9,8 @@ import { transactionManager } from "~core/managers/transaction"
 import * as modelRouter from "~core/model-router"
 import { err, isErr, isOk, ok } from "~core/utils/result-monad"
 import { log } from "~core/utils/utils"
+import { modelCallers } from "~core/llm"
+import { usageManager } from "~core/managers/usage"
 
 import { requestPermission } from "./permission"
 
@@ -34,6 +36,7 @@ const handler: PlasmoMessaging.PortHandler<
   await transactionManager.save(txn)
 
   const config = await configManager.getWithDefault(txn.model)
+  const caller = modelCallers[config.id]
 
   if (request.shouldStream && modelRouter.isStreamable(config)) {
     const replies: string[] = []
@@ -56,6 +59,12 @@ const handler: PlasmoMessaging.PortHandler<
       ? [getOutput(txn.input, replies.join(""))]
       : undefined
     txn.error = errors.join("") || undefined
+
+    const totalCost = transactionManager.getTotalCost(txn, caller.config.getPromptCost(), caller.config.getCompletionCost())
+
+    const usage = await usageManager.getOrInit(txn.origin.id)
+    const updatedUsage = { ...usage, used: usage.used + (totalCost ?? 0) }
+    await usageManager.save(updatedUsage)
   } else {
     const result = await modelRouter.complete(txn)
 

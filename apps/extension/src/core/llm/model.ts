@@ -12,6 +12,8 @@ export interface ModelConfig {
   defaultBaseUrl: string
   modelProvider: string
   isStreamable: boolean
+  getPromptCost: (request: RequestData) => number
+  getCompletionCost: (request: RequestData) => number
   getPath: (request: RequestData) => string
   transformForRequest: (
     request: RequestData,

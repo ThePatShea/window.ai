@@ -19,6 +19,8 @@ export function init(
       modelProvider: "local",
       isStreamable: true,
       defaultBaseUrl: "http://127.0.0.1:8000",
+      getPromptCost: (req) => 0,
+      getCompletionCost: (req) => 0,
       getPath: () => "/completions",
       debug: config.debug,
       cacheGet: config.cacheGet,

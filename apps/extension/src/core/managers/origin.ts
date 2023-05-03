@@ -5,7 +5,7 @@ export interface Origin {
   domain: string
   path: string
   title: string
-  permissions: "allow" | "ask"
+  limit: number
 }
 
 export type OriginData = Pick<Origin, "id" | "domain" | "path" | "title">
@@ -18,7 +18,7 @@ class OriginManager extends BaseManager<Origin> {
   init(data: OriginData): Origin {
     return {
       ...data,
-      permissions: "ask"
+      limit: 0
     }
   }
 

@@ -32,6 +32,8 @@ export function init(
       isStreamable: false,
       modelProvider: "cohere",
       defaultBaseUrl: "https://api.cohere.ai",
+      getPromptCost: (req) => 0, // TODO: Replace this with the correct price per token for cohere
+      getCompletionCost: (req) => 0, // TODO: Replace this with the correct price per token for cohere
       getPath: () => "/generate",
       authPrefix: "BEARER ",
       overrideModelParam: () => CohereModelId.XlargeNightly,

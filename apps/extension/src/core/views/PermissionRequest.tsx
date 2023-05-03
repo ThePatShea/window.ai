@@ -2,6 +2,7 @@ import { KeyIcon } from "@heroicons/react/24/solid"
 import { useEffect, useState } from "react"
 
 import { Accordion } from "~core/components/pure/Accordion"
+import { Slider } from "~core/components/pure/Slider"
 import { Button } from "~core/components/pure/Button"
 import { Dropdown } from "~core/components/pure/Dropdown"
 import { Text } from "~core/components/pure/Text"
@@ -9,11 +10,14 @@ import type { PortResponse } from "~core/constants"
 import { PortName } from "~core/constants"
 import { configManager } from "~core/managers/config"
 import { originManager } from "~core/managers/origin"
+import { usageManager } from "~core/managers/usage"
 import type { Transaction } from "~core/managers/transaction"
 import { transactionManager } from "~core/managers/transaction"
 import { useModel } from "~core/providers/model"
 import { useNav } from "~core/providers/nav"
 import { ModelID } from "~public-interface"
+import type { Origin } from "~core/managers/origin"
+
 
 export function PermissionRequest({
   data,
@@ -27,6 +31,27 @@ export function PermissionRequest({
       ? [undefined, data.error]
       : [data.requester.transaction, undefined]
 
+  const { object: origin, setObject: setOrigin } = originManager.useObject(transaction ? transaction.origin.id : "")
+  const { setObject: setUsage } = usageManager.useObject(transaction ? transaction.origin.id : "")
+
+  const allowTransaction = async () => {
+    if (!transaction) {
+      return
+    }
+
+    setOrigin({
+      ...transaction.origin,
+      limit: origin?.limit ?? 0
+    })
+
+    setUsage({
+      id: transaction.origin.id,
+      used: 0
+    })
+
+    onResult(true)
+  }
+
   return (
     // TODO figure out why hfull doesn't work
     <div className="flex flex-col h-[92%]">
@@ -39,7 +64,7 @@ export function PermissionRequest({
             Permission Request
           </Text>
           {transaction ? (
-            <TransactionPermission transaction={transaction} />
+            <TransactionPermission transaction={transaction} origin={origin} setOrigin={setOrigin} />
           ) : (
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Error: {error}
@@ -51,7 +76,7 @@ export function PermissionRequest({
         <Button appearance="secondary" onClick={() => onResult(false)}>
           Deny
         </Button>
-        <Button appearance="primary" onClick={() => onResult(true)}>
+        <Button appearance="primary" onClick={allowTransaction}>
           Allow
         </Button>
       </div>
@@ -59,12 +84,12 @@ export function PermissionRequest({
   )
 }
 
-function TransactionPermission({ transaction }: { transaction: Transaction }) {
+function TransactionPermission({ transaction, origin, setOrigin }: { transaction: Transaction, origin: Origin | undefined, setOrigin: (origin: Origin) => void }) {
   const { setSettingsShown } = useNav()
   const { modelId, setModelId } = useModel()
   const [label, setLabel] = useState("")
-  const { object, setObject } = originManager.useObject(transaction.origin.id)
   const requestedModel = transaction.model
+  const maxLimit = 1000
 
   useEffect(() => {
     async function checkConfig() {
@@ -94,18 +119,12 @@ function TransactionPermission({ transaction }: { transaction: Transaction }) {
           {JSON.stringify(transactionManager.formatJSON(transaction), null, 2)}
         </code>
       </Accordion>
-      <Dropdown
-        choices={["ask", "allow"]}
-        onSelect={async (permission) =>
-          setObject({
-            ...transaction.origin,
-            permissions: permission
-          })
-        }>
-        {object?.permissions === "allow"
-          ? "Always allow this site"
-          : "Always ask for this site"}
-      </Dropdown>
+      <Slider min={0} max={maxLimit} value={origin?.limit ?? 0} onChange={(newLimit) => 
+        setOrigin({
+          ...transaction.origin,
+          limit: newLimit !== maxLimit ? newLimit : -1
+        })} 
+      />
     </div>
   )
 }

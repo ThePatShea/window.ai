@@ -11,9 +11,13 @@ import type {
 import { POPUP_HEIGHT, POPUP_WIDTH, PortName } from "~core/constants"
 import { Extension } from "~core/extension"
 import { originManager } from "~core/managers/origin"
+import { usageManager } from "~core/managers/usage"
 import type { Result } from "~core/utils/result-monad"
 import { err, ok } from "~core/utils/result-monad"
 import { log } from "~core/utils/utils"
+import { transactionManager } from "~core/managers/transaction"
+import { configManager } from "~core/managers/config"
+import { modelCallers } from "~core/llm"
 
 const permissionState = new RequestState<
   CompletionRequest,
@@ -60,7 +64,20 @@ export async function requestPermission(
     request.transaction.origin.id,
     originData
   )
-  if (origin.permissions === "allow") {
+
+  const usage = await usageManager.getOrInit(request.transaction.origin.id)
+
+  const config = await configManager.getWithDefault(request.transaction.model)
+  const caller = modelCallers[config.id]
+
+  const maxCost = transactionManager.getMaxCost(
+    request.transaction,
+    caller.config.promptCost, 
+    caller.config.completionCost,
+    caller.defaultOptions.max_tokens
+  )
+
+  if (usageManager.isUnderLimit(origin.limit, maxCost, usage.used)) {
     log("Permission granted by user settings: ", origin)
     return ok(true)
   }

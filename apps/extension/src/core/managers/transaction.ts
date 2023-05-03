@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
+import GPT3Tokenizer from "gpt3-tokenizer"
 import {
   type CompletionOptions,
   type Input,
@@ -87,6 +88,42 @@ class TransactionManager extends BaseManager<Transaction> {
         isTextOutput(t) ? t.text : `${t.message.role}: ${t.message.content}`
       )
       .join("\n")
+  }
+
+  countTokens(query: string): number {
+    const tokenizer = new GPT3Tokenizer({ type: 'gpt3' })
+    const encoded: { bpe: number[]; text: string[] } = tokenizer.encode(query)
+
+    return encoded.text.length
+  }
+
+  getMaxCost(txn: Transaction, promptCost: number, completionCost: number, maxTokens: number | null): number | undefined {
+    if ((!promptCost && promptCost !== 0) || (!completionCost && completionCost !== 0) || (!maxTokens && maxTokens !== 0)) { 
+      return undefined 
+    }
+
+    const input = this.formatInput(txn)
+    const promptTokens = this.countTokens(input)
+
+    const maxCost = (promptTokens * promptCost) + (maxTokens * completionCost)
+
+    return maxCost
+  }
+
+  getTotalCost(txn: Transaction, promptCost: number, completionCost: number): number | undefined {
+    const input = this.formatInput(txn)
+    const output = this.formatOutput(txn)
+
+    if (!output) {
+      return undefined
+    }
+
+    const promptTokens = this.countTokens(input)
+    const completionTokens = this.countTokens(output)
+
+    const totalCost = (promptTokens * promptCost) + (completionTokens * completionCost)
+
+    return totalCost
   }
 
   formatJSON(txn: Transaction): object {
