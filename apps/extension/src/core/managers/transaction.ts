@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
-import tiktoken from "@dqbd/tiktoken"
+import GPT3Tokenizer from "gpt3-tokenizer"
 import {
   type CompletionOptions,
   type Input,
@@ -91,10 +91,10 @@ class TransactionManager extends BaseManager<Transaction> {
   }
 
   countTokens(query: string): number {
-    const enc = tiktoken.get_encoding("cl100k_base")
-    const tokens = enc.encode(query)
+    const tokenizer = new GPT3Tokenizer({ type: 'gpt3' })
+    const encoded: { bpe: number[]; text: string[] } = tokenizer.encode(query)
 
-    return tokens.length
+    return encoded.text.length
   }
 
   getMaxCost(txn: Transaction, promptCost: number, completionCost: number, maxTokens: number | null): number | undefined {
